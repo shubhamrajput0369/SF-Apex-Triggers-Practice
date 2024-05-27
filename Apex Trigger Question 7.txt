@@ -1,0 +1,45 @@
+AccountTrigger Trigger on Account(isInsert, isUpdate, isAfter){
+	switch on Trigger.OperationType{
+		when AFTER_INSERT{
+			AccountTriggerHandler.createRelatedContact(Trigger.new, Trigger.oldMap, true);
+		}
+		when AFTER_UPDATE{
+			AccountTriggerHandler.createRelatedContact(Trigger.new, Trigger.oldMap, false);
+		}
+	}
+}
+
+public class AccountTriggerHandler{
+	public static void createRelatedContact(List<Account> newAccList, Map<Id,Account> oldAccList, boolean isInsertOperation){
+		try{
+			Set<Id> accIdsSet = new Set<Id>();
+			for(Account accitem: newAccList){
+				if(isInsertOperation){
+					if(accitem.createContact == true){
+						accIdsSet.add(accitem.Id);	
+					}				
+				}
+				else{
+					if(accitem.createContact == true AND accitem.createContact != oldAccList.get(accitem.Id).createContact){
+						accIdsSet.add(accitem.Id);	
+					}	
+				}
+			}
+			
+			List<Account> accList = [SELECT Id, Phone_Number FROM Account WHERE Id IN: accIdsSet WITH SECUROTY_ENFORCED];
+ 			List<Contact> conListToBeInserted;
+			for(Account accitem: accList){
+				Contact conObj = new Contact();
+				conObj.Phone_Number = accitem.Phone_Number;
+				conListToBeInserted.add(conObj);
+			}
+			
+			if(conListToBeInserted != null && !conListToBeInserted.isEmpty()){
+				Database.insert(conListToBeInserted);
+			}
+		}
+		catch(Exception ex){
+			System.debug(ex.getMessage());
+		}
+	}
+}

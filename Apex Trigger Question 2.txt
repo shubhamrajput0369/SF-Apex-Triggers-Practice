@@ -1,0 +1,44 @@
+Trigger UpdateContact on Contact(after update){
+	
+	Contact
+
+}
+
+Class ContactTriggerHandler{
+
+public void updateContact(List<NewValues> nvlist, Map<OldValues> ovlst){
+	set<id> conId = new Set<id>(); 
+	for(Contact updatedcontact : Trigger.new){
+		if(updatedcontact.account != ovlst.account){
+			cn.Name  = cn.Account.name; // Method 1 
+
+			conId.add(updatedcontact.Id); // Method 2
+		}
+		
+	} 
+
+	List<Contact> cnList = [SELECT Id FROM Contact WHERE Id IN:conId];
+
+	for(Contact cn: cnList){
+		cn.Name  = cn.Account;
+	}
+	
+	update(cnList);
+}
+
+}
+
+
+
+
+
+
+conList.add(conId);
+
+	
+
+}
+
+
+Contact -> Account Field Lookup =>
+
