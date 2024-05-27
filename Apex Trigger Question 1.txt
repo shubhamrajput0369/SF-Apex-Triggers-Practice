@@ -1,0 +1,33 @@
+Trigger STContactTrigger on Contact(after update){
+	switch{
+		when AFTER_UPDATE {
+		TriggerHandlerClass.updateContactFields()
+		}	
+	}
+}
+
+
+class TriggerHandlerClass{
+	public staic void updateContactFields(List<Contact> newObjList, Map<Id,Contact> oldObjList){
+		try{
+		Map<Id,String> idMap = new Map<Id,String>;
+		
+		for(Contact con : newObjList){
+			if(con.Account__c != oldObjList.get(con.Id).Account__c){
+				idMap.put(con.Id, Account__c);
+			}
+		}
+		List<Contact> conList = [SELECT Id, Account.Name FROM Contact WHERE Account__c IN: idMap.values()];
+		
+		for(Contact con: conList){
+			con.Name = con.Account.Name;
+		}
+
+		database.update(conList);
+		}
+		catch(Exception ex){
+			System.debug('Exception Message - 'ex.getMessage());
+			System.debug('Exception Line Number - 'ex.getLineNumber());
+		}
+	}
+}
