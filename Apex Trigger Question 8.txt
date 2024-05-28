@@ -1,0 +1,53 @@
+AccountTrigger Trigger on Account(after insert, after update, before delete, after undelete){
+	switch on Trigger.OperationType{
+		when AFTER_INSERT{
+			OpportunityTrigger.updateOpportunityAmmountOnAccount(Trigger.new, Trigger.oldMap, true, false, false, false);
+		}
+		when AFTER_UPDATE{
+			OpportunityTrigger.updateOpportunityAmmountOnAccount(Trigger.new, Trigger.oldMap, false, true, false, false);
+		}
+		when BEFORE_DELETE{
+			OpportunityTrigger.updateOpportunityAmmountOnAccount(Trigger.new, Trigger.oldMap, false, false, true, false);
+		}
+		when AFTER_UNDELETE{
+			OpportunityTrigger.updateOpportunityAmmountOnAccount(Trigger.new, Trigger.oldMap, false, false, false, true);
+		}
+	}
+}
+
+public class OpportunityTrigger{
+	public static void updateOpportunityAmmountOnAccount(List<Opportunity> newListOpp, Map<Id,Opportunity> oldMapOpp, Boolean isInsert, Boolean isUpdate, Boolean isDelete, Boolean isUndelete){
+		try{
+			Set<Id> accIdsSet = new Set<Id>();
+			forOpportunity oppItem : newListOpp){
+				if((isInsert || isDelete || isUndelete) && (oppItem.Ammount != null)){
+					accIdsSet.add(oppItem.Account);
+				}
+				else if(isUpdate && oppItem.Ammount != oldMapOpp.get(oppItem).Ammount){
+					accIdsSet.add(oppItem.Account);	
+				}
+			}
+			
+			Integer totalAmm;
+			if(accIdsSet != null && !accIdsSet.isEmpty()){
+			List<Opportunity> oppList = [SELECT Id, Ammount, FROM Opportunity WHERE Account IN: accIdsSet];
+			Map<Id,Account> accIdVsAccountMap = new Map<Id, Account>([SELECT Id, TotalAmmount FROM Account WHERE Id IN: accIdsSet]);
+			for(Id accIdItem : accIdsSet){
+				for(Opportunity itemOpp : oppList){
+					if(itemOpp.Account == accIdItem){
+						totalAmm += itemOpp.Ammount;
+					}				
+				}	
+				accIdVsAccountMap.get(accIdItem).TotalAmmount = totalAmm;
+			}
+			
+			Database.update(accIdVsAccountMap.values());
+			}
+		}
+		catch(Exception ex){
+			System.debug(ex.getMessage());
+		}
+	}
+}
+
+Time - 40.29.43
