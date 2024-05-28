@@ -1,0 +1,16 @@
+#DONE Update External Credential App AI certification
+#DONE 
+
+Bulk API
+Technical Steps:
+1) Add/Create batch job
+2) Specify Object on which the the operation will execute & Operation Type in the Job.
+3) After completion of batch run, close the Batch Job
+4) get the result from the batch job
+
+Functional Steps:
+1) Create a new Job
+2) Add one or more batches to the created job
+3) Close the Job
+4) Get the result from the batch
+
