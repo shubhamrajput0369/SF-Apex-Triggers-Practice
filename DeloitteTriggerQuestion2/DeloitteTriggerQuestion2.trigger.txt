@@ -1,0 +1,5 @@
+/* Problem Statement - Write a trigger to throw an error message when user tries to create more than one opportunity per account in a single day */
+
+trigger OpportunityTrigger on Opportunity (before insert){
+	OpportunityTriggerHandler.insertOpportunityValidation(Trigger.newMap);
+}
